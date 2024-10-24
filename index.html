@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zombie Apocalypse Simulator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-color: #ff3333;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2a2a2a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark-bg);
+            color: #ffffff;
+            min-height: 100vh;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .banner {
+            width: 100%;
+            height: 250px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(0deg, rgba(26,26,26,1) 0%, rgba(26,26,26,0.7) 50%, rgba(26,26,26,0.4) 100%);
+            z-index: 1;
+        }
+
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 2;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(255,51,51,0.5);
+        }
+
+        .game-description {
+            color: #ffffff;
+            max-width: 500px;
+            text-align: center;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 250px minmax(auto, 350px); /* Limits the canvas container width */
+            gap: 1rem;
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 15px;
+            margin-top: -30px;
+            position: relative;
+            z-index: 2;
+            justify-content: center;
+        }
+
+        .controls-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 0.5rem;
+        }
+
+        label {
+            display: block;
+            color: #ffffff;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+
+        .size-control {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .size-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .size-value {
+            min-width: 45px;
+            font-size: 0.8rem;
+            text-align: right;
+        }
+
+        #startButton {
+            width: 100%;
+            padding: 0.7rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        #startButton:hover {
+            background: #ff4444;
+        }
+
+        .canvas-container {
+            aspect-ratio: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            width: 600px;  /* Fixed width */
+            height: 600px; /* Fixed height */
+            margin: 0 auto;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .game-rules {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .entities-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .entity-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+
+        .entity-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .entity-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .entity-card h3 {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .entity-card p {
+            font-size: 0.8rem;
+            line-height: 1.3;
+            color: #cccccc;
+        }
+
+        .victory-conditions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 0.8rem;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .condition {
+            text-align: center;
+        }
+
+        .condition h4 {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .condition p {
+            font-size: 0.8rem;
+            color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <img src="Zombieapocalypse.jpeg" alt="Zombie Apocalypse Banner">
+        <div class="banner-overlay">
+            <h1>Zombie Apocalypse Simulator</h1>
+            <p class="game-description">
+                Experience a dynamic simulation of a zombie outbreak. Watch as humans, doctors, and hunters 
+                battle against zombies and their powerful kings in this unique ecosystem.
+            </p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="game-container">
+            <div class="controls-container">
+                <div class="input-group">
+                    <label for="zombies">Zombies</label>
+                    <input type="number" id="zombies" value="5" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="humans">Humans</label>
+                    <input type="number" id="humans" value="10" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="doctors">Doctors</label>
+                    <input type="number" id="doctors" value="3" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="hunters">Hunters</label>
+                    <input type="number" id="hunters" value="2" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="kings">Zombie Kings</label>
+                    <input type="number" id="kings" value="1" min="0">
+                </div>
+                <div class="input-group size-control">
+                    <label for="entitySize">Entity Radius</label>
+                    <div class="slider-container">
+                        <input type="range" id="entitySize" min="0" max="100" class="size-slider">
+                        <span class="size-value">0.020</span>
+                    </div>
+                </div>
+                <button id="startButton">Start Simulation</button>
+            </div>
+            <div class="canvas-container">
+                <canvas id="gameCanvas" width="350" height="350"></canvas>
+            </div>
+        </div>
+
+        <div class="game-rules">
+            <div class="entities-grid">
+                <div class="entity-card">
+                    <div class="entity-header">
+                        <img src="zombie.png" alt="Zombie" class="entity-icon">
+                        <h3>Zombie</h3>
+                    </div>
+                    <p>Infects humans on contact. Can be cured by doctors or killed by hunters.</p>
+                </div>
+
+                <div class="entity-card">
+                    <div class="entity-header">
+                        <img src="human.png" alt="Human" class="entity-icon">
+                        <h3>Human</h3>
+                    </div>
+                    <p>Turns into zombie if touched by zombies or kings. Must survive until threat is eliminated.</p>
+                </div>
+
+                <div class="entity-card">
+                    <div class="entity-header">
+                        <img src="doctor.png" alt="Doctor" class="entity-icon">
+                        <h3>Doctor</h3>
+                    </div>
+                    <p>Cures zombies back to humans. Vulnerable to kings. Cannot cure kings.</p>
+                </div>
+
+                <div class="entity-card">
+                    <div class="entity-header">
+                        <img src="hunter.png" alt="Hunter" class="entity-icon">
+                        <h3>Hunter</h3>
+                    </div>
+                    <p>Can kill both zombies and kings. The only ones who can eliminate kings.</p>
+                </div>
+
+                <div class="entity-card">
+                    <div class="entity-header">
+                        <img src="king.png" alt="King" class="entity-icon">
+                        <h3>Zombie King</h3>
+                    </div>
+                    <p>Infects humans and doctors. When all kings die, all zombies die too.</p>
+                </div>
+            </div>
+
+            <div class="victory-conditions">
+                <div class="condition">
+                    <h4>Humans Win</h4>
+                    <p>When all zombies and kings are eliminated</p>
+                </div>
+                <div class="condition">
+                    <h4>Zombies Win</h4>
+                    <p>When all humans and doctors are infected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
