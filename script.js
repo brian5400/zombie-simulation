@@ -339,7 +339,7 @@ function animate() {
     if (isRunning) {
         updateEntities();
         drawEntities();
-        requestAnimationFrame(animate);
+        animationId = requestAnimationFrame(animate);
     }
 }
 
